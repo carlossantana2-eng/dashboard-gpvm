@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Dashboard • SI-PÁTIO (v14)</title>
+
+  <style>
+    :root {
+      --bg: #0b1220;
+      --text: #e8edf7;
+      --muted: #9fb0d0;
+      --border: rgba(255,255,255,.10);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 14px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      --ok: rgba(52, 211, 153, .18);
+      --warn: rgba(251, 191, 36, .16);
+      --bad: rgba(251, 113, 133, .16);
+      --info: rgba(77,163,255,.15);
+    }
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: radial-gradient(1200px 600px at 10% 0%, #142244, transparent), var(--bg);
+      color:var(--text);
+    }
+    header{
+      padding:20px 22px 10px;
+      position:sticky;
+      top:0;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(to bottom, rgba(11,18,32,.92), rgba(11,18,32,.60));
+      border-bottom:1px solid var(--border);
+      z-index:100;
+    }
+    h1{margin:0 0 6px; font-size:18px; letter-spacing:.3px}
+    .sub{color:var(--muted); font-size:12px}
+    .wrap{padding:16px 22px 30px}
+    .grid{display:grid; gap:14px}
+    .grid.kpis{grid-template-columns: repeat(4, minmax(180px, 1fr))}
+    .grid.main{grid-template-columns: 420px 1fr; align-items:start}
+    .grid.charts{grid-template-columns: repeat(2, minmax(320px, 1fr))}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+    .card .hd{
+      padding:12px 14px;
+      border-bottom:1px solid var(--border);
+      display:flex; gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .card .hd h2{margin:0; font-size:13px; font-weight:650; color:var(--text)}
+    .card .bd{padding:12px 14px}
+    .kpi{padding:12px 14px}
+    .kpi .label{color:var(--muted); font-size:12px}
+    .kpi .value{font-size:24px; font-weight:750; margin-top:8px}
+    .kpi .note{margin-top:6px; color:var(--muted); font-size:11px; line-height:1.25}
+    .pill{
+      font-family:var(--mono);
+      font-size:11px;
+      color:var(--muted);
+      border:1px dashed var(--border);
+      padding:5px 8px;
+      border-radius:999px;
+      white-space:nowrap;
+    }
+    .pill.ok{background:var(--ok)}
+    .pill.warn{background:var(--warn)}
+    .pill.bad{background:var(--bad)}
+    .pill.info{background:var(--info)}
+    .plot{width:100%; height:360px}
+    .controls label{display:block; font-size:11px; color:var(--muted); margin-bottom:6px}
+    .controls input, .controls select{
+      width:100%;
+      box-sizing:border-box;
+      padding:9px 10px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background: rgba(0,0,0,.22);
+      color:var(--text);
+      outline:none;
+    }
+    .controls input[type="file"]{padding:10px}
+    .controls .row{display:grid; grid-template-columns: 1fr 1fr; gap:10px}
+    .btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+    button{
+      border:1px solid var(--border);
+      background: rgba(77,163,255,.15);
+      color:var(--text);
+      padding:9px 12px;
+      border-radius:11px;
+      cursor:pointer;
+      font-weight:650;
+    }
+    button.secondary{background: rgba(255,255,255,.06)}
+    button.danger{background: rgba(251,113,133,.15)}
+    button.ok{background: rgba(52,211,153,.15)}
+.tinybtn{padding:6px 10px; border-radius:10px; font-size:11px;}
+    .tiny{font-size:11px; color:var(--muted)}
+    #tableWrap{overflow:hidden}
+    table.dataTable{width:100% !important; border-collapse:collapse !important}
+    table.dataTable thead th{
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      border-bottom: 1px solid var(--border) !important;
+    }
+    table.dataTable tbody td{
+      border-bottom: 1px solid rgba(255,255,255,.06) !important;
+    }
+    .dataTables_wrapper .dataTables_filter input,
+    .dataTables_wrapper .dataTables_length select{
+      background: rgba(0,0,0,.22);
+      color: var(--text);
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:6px 8px;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button{
+      color: var(--text) !important;
+      border-radius:9px;
+      border:1px solid transparent;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current{
+      background: rgba(77,163,255,.20) !important;
+      border: 1px solid var(--border) !important;
+    }
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_paginate{
+      color: var(--muted) !important;
+    }
+    .radioRow{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .radioRow label{display:flex; align-items:center; gap:8px; margin:0}
+    .radioRow input{width:auto}
+    @media (max-width:1100px){
+      .grid.kpis{grid-template-columns: repeat(2, minmax(180px, 1fr))}
+      .grid.main{grid-template-columns:1fr}
+      .grid.charts{grid-template-columns:1fr}
+      .plot{height:320px}
+    }
+  </style>
+
+  <!-- CDN libs (se quiser offline: baixe esses arquivos e aponte para caminhos locais) -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css"/>
+  <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+</head>
+
+<body>
+<header>
+  <h1>Dashboard • SI-PÁTIO (v14) • Paradas / Falhas</h1>
+  <div class="sub">
+    Fonte: <span class="pill info" id="pillSource">—</span>
+    • Período: <span class="pill" id="pillPeriod">—</span>
+    • Linhas: <span class="pill" id="pillRows">—</span>
+    • Status: <span class="pill" id="pillStatus">aguardando</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="grid kpis">
+    <div class="card kpi">
+      <div class="label">Total de eventos</div>
+      <div class="value" id="kpiEventos">—</div>
+      <div class="note" id="kpiEventosNote">—</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Downtime total</div>
+      <div class="value" id="kpiDowntime">—</div>
+      <div class="note" id="kpiDowntimeNote">—</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Duração média</div>
+      <div class="value" id="kpiMedia">—</div>
+      <div class="note" id="kpiMediaNote">—</div>
+    </div>
+    <div class="card kpi">
+      <div class="label">Maior evento</div>
+      <div class="value" id="kpiMax">—</div>
+      <div class="note" id="kpiMaxNote">—</div>
+    </div>
+  </div>
+
+  <div class="grid main" style="margin-top:14px;">
+    <div class="card controls">
+      <div class="hd">
+        <h2>Filtros & Importação</h2>
+        <span class="pill" id="pillFiltered">filtrado: —</span>
+      </div>
+
+      <div class="bd">
+        <label>Importar CSV ou Excel (.xlsx/.xls) — pode selecionar vários arquivos de uma vez (ex.: um por mês)</label>
+        <input id="fileInput" type="file" multiple accept=".csv,.xlsx,.xls,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"/>
+
+        <div style="height:10px"></div>
+
+        <div class="radioRow">
+          <label class="tiny"><input type="radio" name="importMode" value="replace" checked/> Substituir base</label>
+          <label class="tiny"><input type="radio" name="importMode" value="append"/> Adicionar/Mesclar (dedup)</label>
+        </div>
+
+        <div class="btns">
+          <button class="ok" id="btnSave">Salvar no navegador</button>
+          <button class="secondary" id="btnLoad">Carregar do navegador</button>
+          <button class="danger" id="btnClearStore">Limpar cache</button>
+        </div>
+
+        <div style="height:12px"></div>
+
+        <div class="row">
+          <div>
+            <label>Data início (>=)</label>
+            <input id="fStart" type="datetime-local"/>
+          </div>
+          <div>
+            <label>Data fim (<=)</label>
+            <input id="fEnd" type="datetime-local"/>
+          </div>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="row">
+          <div>
+            <label>EGP</label>
+            <select id="fEGP"></select>
+          </div>
+          <div>
+            <label>Equipamento</label>
+            <select id="fEquip"></select>
+          </div>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="row">
+          <div>
+            <label>Setor</label>
+            <select id="fSetor"></select>
+          </div>
+          <div>
+            <label>Turma</label>
+            <select id="fTurma"></select>
+          </div>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="row">
+          <div>
+            <label>Causa</label>
+            <select id="fCausa"></select>
+          </div>
+          <div>
+            <label>Falha</label>
+            <select id="fFalha" multiple size="6"></select>
+          </div>
+        </div>
+
+
+<div style="height:10px"></div>
+<div class="row">
+  <div>
+    <label>Hora início (00–23)</label>
+    <select id="fHourStart"></select>
+  </div>
+  <div>
+    <label>Hora fim (00–24)</label>
+    <select id="fHourEnd"></select>
+  </div>
+</div>
+<div style="height:10px"></div>
+
+<label>Janela (hora) • Troca de turno</label>
+<div class="radioRow">
+  <label class="tiny">
+    <input type="checkbox" id="fTrocaTurno" />
+    Somente paradas na troca de turno (17:30–18:30 e 05:30–06:30)
+  </label>
+</div>
+
+<div class="radioRow">
+  <label class="tiny">
+    <input type="radio" name="shiftMode" value="overlap" checked />
+    Considerar paradas que cruzam a janela (recomendado)
+  </label>
+  <label class="tiny">
+    <input type="radio" name="shiftMode" value="start" />
+    Considerar só paradas que iniciam na janela
+  </label>
+</div>
+
+
+        <div class="btns">
+          <button id="btnApply">Aplicar filtros</button>
+          <button class="secondary" id="btnClear">Limpar</button>
+          <button class="secondary" id="btnReset">Voltar ao padrão</button>
+          <button class="danger" id="btnExport">Exportar filtrado (CSV)</button>
+        </div>
+
+        <div class="tiny" style="margin-top:10px; line-height:1.35;">
+          Aceita <b>.csv</b> (separador <b>;</b>) e <b>.xlsx/.xls</b>. As colunas podem vir em qualquer ordem e a planilha pode ter colunas extras — só as reconhecidas (Equipamento, EGP, Classe, Setor, Causa, Falha, Turma, Data Início, Data Fim, Duração) são usadas, o resto é ignorado automaticamente.
+          <br/>Dica: se o auto-load falhar ao abrir via <b>file://</b>, use “Importar”.
+        </div>
+      </div>
+    </div>
+
+    <div class="grid charts">
+      <div class="card">
+        <div class="hd"><h2>Downtime por mês</h2></div>
+        <div class="bd"><div id="chMonthly" class="plot"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="hd"><h2>Top 10 EGP (downtime)</h2></div>
+        <div class="bd"><div id="chEgp" class="plot"></div></div>
+      </div>
+
+      <div class="card">
+  <div class="hd">
+    <h2>Eventos por hora (00–23) • quantidade</h2>
+    <span class="pill" id="pillHourHint">clique em uma hora para filtrar</span>
+  </div>
+  <div class="bd">
+    <div id="chHourEvents" class="plot"></div>
+    <div style="height:10px"></div>
+    <table id="tblHour" class="display" style="width:100%">
+      <thead>
+        <tr>
+          <th>Hora</th>
+          <th>Eventos</th>
+          <th>Downtime (h)</th>
+          <th>Ação</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+      <div class="card">
+        <div class="hd"><h2>Downtime por Turma</h2></div>
+        <div class="bd"><div id="chTurma" class="plot"></div></div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="card">
+    <div class="hd">
+      <h2>Comparativo por mês • 2025 vs 2026</h2>
+      <span class="pill" id="pillCompareHint">métrica: downtime (h)</span>
+    </div>
+    <div class="bd">
+      <div id="chMonthlyCompare" class="plot"></div>
+      <div class="btns">
+        <button class="tinybtn" id="btnMetricDow">Downtime (h)</button>
+        <button class="tinybtn secondary" id="btnMetricEvt">Eventos (qtd)</button>
+      </div>
+      <div class="tiny" style="margin-top:8px;">Obs.: Se não houver dados de 2026 no CSV, a coluna 2026 aparecerá zerada.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="hd"><h2>Tabela comparativa por mês</h2></div>
+    <div class="bd">
+      <table id="tblMonthlyCompare" class="display" style="width:100%">
+        <thead>
+          <tr>
+            <th>Mês</th>
+            <th>2025</th>
+            <th>2026</th>
+            <th>Δ 26–25</th>
+            <th>%Δ</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;" id="tableWrap">
+    <div class="hd">
+      <h2>Tabela (eventos filtrados)</h2>
+      <span class="pill" id="pillTable">—</span>
+    </div>
+    <div class="bd">
+      <table id="tbl" class="display" style="width:100%">
+        <thead>
+        <tr>
+          <th>Equipamento</th>
+          <th>EGP</th>
+          <th>Classe</th>
+          <th>Setor</th>
+          <th>Causa</th>
+          <th>Falha</th>
+          <th>Turma</th>
+          <th>Data Início</th>
+          <th>Data Fim</th>
+          <th>Duração</th>
+          <th>Duração (min)</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ===============================
+   Dashboard SI-PÁTIO
+   - import CSV (replace/append)
+   - filtros
+   - gráficos + tabela
+   - cache localStorage
+================================= */
+
+const STORE_KEY = "SI_PATIO_DASH_V1";
+
+let BASE = [];        // dataset completo (normalizado)
+let FILTERED = [];    // dataset filtrado (normalizado)
+let DEFAULT_SNAPSHOT = null;
+
+let DT = null;
+let DT_HOUR = null;
+let DT_MC = null;
+let COMPARE_METRIC = "dow";
+const $ = (sel) => document.querySelector(sel);
+const setPill = (id, text, cls=null) => {
+  const el = $("#"+id);
+  el.textContent = text;
+  el.classList.remove("ok","warn","bad","info");
+  if (cls) el.classList.add(cls);
+};
+
+function stripAccents(s){
+  return (s ?? "")
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+function normKey(s){
+  return stripAccents(s).toLowerCase().replace(/\s+/g," ").trim();
+}
+
+// dd/mm/yyyy hh:mm:ss -> Date (robusto sem locale)
+function parseBRDateTime(s){
+  if (!s) return null;
+  s = s.toString().trim();
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)) {
+    const d = new Date(s);
+    return isNaN(d) ? null : d;
+  }
+  // aceita dd/mm/yyyy hh:mm(:ss) e também dd/mm/yyyy (sem hora)
+  const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?$/);
+  if (!m) return null;
+  const dd=+m[1], mm=+m[2], yyyy=+m[3], HH=m[4]?+m[4]:0, MI=m[5]?+m[5]:0, SS=m[6]?+m[6]:0;
+  const d = new Date(yyyy, mm-1, dd, HH, MI, SS);
+  return isNaN(d) ? null : d;
+}
+
+// Converte número serial de data do Excel (dias desde 1899-12-30) em Date local
+function excelSerialToDate(n){
+  if (n == null || isNaN(n)) return null;
+  const utcDays = Math.floor(n - 25569);
+  const utcValue = utcDays * 86400;
+  const dateInfo = new Date(utcValue * 1000);
+  const fractionalDay = n - Math.floor(n) + 0.0000001;
+  let totalSeconds = Math.floor(86400 * fractionalDay);
+  const seconds = totalSeconds % 60; totalSeconds -= seconds;
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor(totalSeconds / 60) % 60;
+  const d = new Date(Date.UTC(dateInfo.getUTCFullYear(), dateInfo.getUTCMonth(), dateInfo.getUTCDate(), hours, minutes, seconds));
+  // devolve como horário "local" (sem fuso), igual a como o Excel exibe
+  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds());
+}
+
+// Aceita: string "dd/mm/yyyy hh:mm:ss", objeto Date (vindo do XLSX com cellDates) ou número serial do Excel
+function parseAnyDateTime(v){
+  try{
+    if (v == null || v === "") return null;
+    if (v instanceof Date) return isNaN(v) ? null : v;
+    if (typeof v === "number") return excelSerialToDate(v);
+    return parseBRDateTime(v);
+  } catch(e){ return null; }
+}
+
+function pad2(n){ return String(n).padStart(2,"0"); }
+function formatBR(d){
+  if (!d) return "";
+  return `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}/${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}:${pad2(d.getSeconds())}`;
+}
+function toDTLocalValue(d){
+  if (!d) return "";
+  // yyyy-mm-ddThh:mm
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
+function fmtHMS(totalSeconds){
+  if (totalSeconds == null || isNaN(totalSeconds)) return "—";
+  const s = Math.max(0, Math.floor(totalSeconds));
+  const hh = Math.floor(s/3600);
+  const mm = Math.floor((s%3600)/60);
+  const ss = s%60;
+  return `${pad2(hh)}:${pad2(mm)}:${pad2(ss)}`;
+}
+function parseHMS(hms){
+  if (!hms) return null;
+  const m = hms.toString().trim().match(/^(\d+):(\d{2}):(\d{2})$/);
+  if (!m) return null;
+  return (+m[1])*3600 + (+m[2])*60 + (+m[3]);
+}
+
+// Aceita string "HH:MM:SS", número (fração de dia, típico de célula de hora do Excel) ou Date
+function parseDurationAny(v){
+  try{
+    if (v == null || v === "") return null;
+    if (v instanceof Date) return v.getHours()*3600 + v.getMinutes()*60 + v.getSeconds();
+    if (typeof v === "number") return Math.round(v*86400);
+    return parseHMS(v);
+  } catch(e){ return null; }
+}
+function humanHours(seconds){
+  const h = (seconds/3600);
+  return h >= 10 ? h.toFixed(1)+" h" : h.toFixed(2)+" h";
+}
+function monthKey(d){
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}`;
+}
+const DOW = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
+
+function makeId(r){
+  // chave para deduplicar no append
+  return [
+    r.equipamento, r.egp, r.inicio?.toISOString?.() ?? "",
+    r.fim?.toISOString?.() ?? "", r.causa, r.falha, r.turma
+  ].join("|");
+}
+
+function normalizeRows(rawRows){
+  const out = [];
+  for (const rr of rawRows){
+    const obj = {};
+    for (const k of Object.keys(rr)){
+      obj[normKey(k)] = rr[k];
+    }
+
+    const equipamento = (obj["equipamento"] ?? "").toString().trim();
+    const egp        = (obj["egp"] ?? "").toString().trim();
+    const classe     = (obj["classe"] ?? obj["classe do egp"] ?? "").toString().trim();
+    const setor      = (obj["setor"] ?? "").toString().trim();
+    const causa      = (obj["causa"] ?? "").toString().trim();
+    const falha      = (obj["falha"] ?? "").toString().trim();
+    const turma      = (obj["turma"] ?? "").toString().trim();
+
+    // aceita várias grafias de coluna (com/sem acento, "inicio"/"data de inicio" etc.)
+    const inicio = parseAnyDateTime(
+      obj["data inicio"] ?? obj["data_inicio"] ?? obj["data de inicio"] ?? obj["inicio"]
+    );
+    const fim = parseAnyDateTime(
+      obj["data fim"] ?? obj["data_fim"] ?? obj["data de fim"] ?? obj["fim"] ?? obj["data termino"] ?? obj["data término"]
+    );
+
+    let dur_s = parseDurationAny(obj["duracao"] ?? obj["duração"] ?? obj["dur"] ?? obj["tempo parada"]);
+    if ((dur_s == null || isNaN(dur_s)) && inicio && fim) {
+      dur_s = Math.max(0, Math.round((fim - inicio)/1000));
+    }
+    const dur_text = fmtHMS(dur_s);
+
+    if (!inicio || !fim || dur_s == null) continue;
+
+    out.push({
+      equipamento, egp, classe, setor, causa, falha, turma,
+      inicio, fim,
+      dur_s,
+      dur_text,
+      mes: monthKey(inicio),
+      dow: inicio.getDay(),
+      hora: inicio.getHours(),
+      _id: ""
+    });
+  }
+
+  for (const r of out) r._id = makeId(r);
+  return out;
+}
+
+function setStatus(text, level="info"){
+  setPill("pillStatus", text, level);
+}
+
+function computeMeta(rows){
+  if (!rows.length) return {min:null,max:null};
+  let min = rows[0].inicio, max = rows[0].fim;
+  for (const r of rows){
+    if (r.inicio < min) min = r.inicio;
+    if (r.fim > max) max = r.fim;
+  }
+  return {min,max};
+}
+
+function fillSelect(id, values){
+  const sel = $("#"+id);
+  sel.innerHTML = "";
+  const optAll = document.createElement("option");
+  optAll.value = "";
+  optAll.textContent = "Todos";
+  sel.appendChild(optAll);
+
+  for (const v of values){
+    const opt = document.createElement("option");
+    opt.value = v;
+    opt.textContent = v || "(vazio)";
+    sel.appendChild(opt);
+  }
+}
+
+function refreshFilterOptions(rows){
+  const uniq = (arr) => Array.from(new Set(arr.filter(v => v != null)))
+    .sort((a,b)=>String(a).localeCompare(String(b), "pt-BR"));
+
+  fillSelect("fEGP",   uniq(rows.map(r => r.egp)));
+  fillSelect("fEquip", uniq(rows.map(r => r.equipamento)));
+  fillSelect("fSetor", uniq(rows.map(r => r.setor)));
+  fillSelect("fTurma", uniq(rows.map(r => r.turma)));
+  fillSelect("fCausa", uniq(rows.map(r => r.causa)));
+  fillSelect("fFalha", uniq(rows.map(r => r.falha)));
+}
+
+function fillHourSelect(id, include24=false){
+  const sel = document.querySelector('#'+id);
+  sel.innerHTML = '';
+  const optAll = document.createElement('option');
+  optAll.value = '';
+  optAll.textContent = 'Todas';
+  sel.appendChild(optAll);
+  for(let h=0; h<24; h++){
+    const opt = document.createElement('option');
+    opt.value = String(h);
+    opt.textContent = pad2(h);
+    sel.appendChild(opt);
+  }
+  if(include24){
+    const opt = document.createElement('option');
+    opt.value = '24';
+    opt.textContent = '24 (fim do dia)';
+    sel.appendChild(opt);
+  }
+}
+
+
+
+/* === Troca de turno (janelas fixas) === */
+function timeToMin(hhmm){
+  const [h,m] = hhmm.split(":").map(Number);
+  return h*60 + m;
+}
+
+const SHIFT_WINDOWS = [
+  { start: timeToMin("17:30"), end: timeToMin("18:30") },
+  { start: timeToMin("05:30"), end: timeToMin("06:30") }
+];
+
+function minutesOfDay(d){
+  return d.getHours()*60 + d.getMinutes();
+}
+
+function overlapSameDay(aStartMin, aEndMin, wStartMin, wEndMin){
+  return aStartMin <= wEndMin && aEndMin >= wStartMin;
+}
+
+// Opção 2 (recomendado): considera paradas que INTERSECTAM as janelas de troca de turno.
+function matchesShiftWindow(inicio, fim, mode="overlap"){
+  if(!inicio || !fim) return false;
+
+  const startDate = new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate());
+  const endDate   = new Date(fim.getFullYear(), fim.getMonth(), fim.getDate());
+  const days = Math.min(14, Math.round((endDate - startDate) / (24*3600*1000)) + 1);
+
+  for(let i=0; i<days; i++){
+    const day = new Date(startDate);
+    day.setDate(startDate.getDate()+i);
+
+    const dayStart = new Date(day); dayStart.setHours(0,0,0,0);
+    const dayEnd   = new Date(day); dayEnd.setHours(23,59,59,999);
+
+    const segStart = (inicio > dayStart) ? inicio : dayStart;
+    const segEnd   = (fim   < dayEnd)   ? fim   : dayEnd;
+
+    const aStartMin = minutesOfDay(segStart);
+    const aEndMin   = minutesOfDay(segEnd);
+
+    for(const w of SHIFT_WINDOWS){
+      if(mode === "start"){
+        const sMin = minutesOfDay(inicio);
+        if(sMin >= w.start && sMin <= w.end) return true;
+      } else {
+        if(overlapSameDay(aStartMin, aEndMin, w.start, w.end)) return true;
+      }
+    }
+  }
+  return false;
+}
+
+function getShiftMode(){
+  return document.querySelector('input[name="shiftMode"]:checked')?.value || "overlap";
+}
+
+
+function applyFilters(){
+  const startVal = $("#fStart").value ? new Date($("#fStart").value) : null;
+  const endVal   = $("#fEnd").value ? new Date($("#fEnd").value) : null;
+
+  
+  const hStartVal = $("#fHourStart").value;
+  const hEndVal   = $("#fHourEnd").value;
+  const hStart = hStartVal==="" ? null : parseInt(hStartVal,10);
+  let   hEnd   = hEndVal==="" ? null : parseInt(hEndVal,10);
+  if(hEnd === 24) hEnd = 23;
+
+const falhasSelecionadas = Array.from($("#fFalha").selectedOptions)
+      .map(o => o.value);
+
+const f = {
+    egp: $("#fEGP").value,
+    equipamento: $("#fEquip").value,
+    setor: $("#fSetor").value,
+    turma: $("#fTurma").value,
+    causa: $("#fCausa").value,
+    falhas: falhasSelecionadas
+};
+
+  const onlyShift = $("#fTrocaTurno").checked;
+  const shiftMode = getShiftMode();
+
+  FILTERED = BASE.filter(r => {
+    if (startVal && r.inicio < startVal) return false;
+    if (endVal && r.fim > endVal) return false;
+
+    if (f.egp && r.egp !== f.egp) return false;
+    if (f.equipamento && r.equipamento !== f.equipamento) return false;
+    if (f.setor && r.setor !== f.setor) return false;
+    if (f.turma && r.turma !== f.turma) return false;
+    if (f.causa && r.causa !== f.causa) return false;
+    if (f.falhas.length && !f.falhas.includes(r.falha))
+    return false;
+ // ✅ Hora (início)
+ if (hStart != null && r.hora < hStart) return false;
+ if (hEnd != null && r.hora > hEnd) return false;
+
+    // ✅ Troca de turno (opção 2: interseção com a janela)
+    if (onlyShift && !matchesShiftWindow(r.inicio, r.fim, shiftMode)) return false;
+
+    return true;
+  });
+
+  setPill("pillFiltered", `filtrado: ${FILTERED.length}/${BASE.length}`);
+  renderAll();
+}
+
+function clearFilters(){
+  $("#fStart").value = "";
+  $("#fEnd").value = "";
+  $("#fEGP").value = "";
+  $("#fEquip").value = "";
+  $("#fSetor").value = "";
+  $("#fTurma").value = "";
+  $("#fCausa").value = "";
+  Array.from($("#fFalha").options).forEach(o => o.selected = false);
+ $("#fHourStart").value = "";
+ $("#fHourEnd").value = "";
+  $("#fTrocaTurno").checked = false;
+  const rb = document.querySelector('input[name="shiftMode"][value="overlap"]');
+  if (rb) rb.checked = true;
+  FILTERED = BASE.slice();
+  setPill("pillFiltered", `filtrado: ${FILTERED.length}/${BASE.length}`);
+  renderAll();
+}
+
+function resetToDefault(){
+  if (!DEFAULT_SNAPSHOT) return;
+  BASE = DEFAULT_SNAPSHOT.slice();
+  refreshFilterOptions(BASE);
+
+  const meta = computeMeta(BASE);
+  $("#fStart").value = meta.min ? toDTLocalValue(meta.min) : "";
+  $("#fEnd").value   = meta.max ? toDTLocalValue(meta.max) : "";
+
+  FILTERED = BASE.slice();
+  setPill("pillFiltered", `filtrado: ${FILTERED.length}/${BASE.length}`);
+  setStatus("padrão", "info");
+  renderAll();
+}
+
+function updateHeaderMeta(sourceName){
+  const meta = computeMeta(BASE);
+
+  setPill("pillSource", sourceName || "—", "info");
+  setPill("pillRows", `${BASE.length}`);
+
+  if (meta.min && meta.max) {
+    setPill("pillPeriod", `${formatBR(meta.min)} → ${formatBR(meta.max)}`);
+  } else {
+    setPill("pillPeriod", "—");
+  }
+}
+
+function renderKPIs(){
+  const n = FILTERED.length;
+  const downtime = FILTERED.reduce((a,r)=>a+(r.dur_s||0),0);
+  const avg = n ? downtime/n : 0;
+
+  let maxR = null;
+  for (const r of FILTERED){
+    if (!maxR || (r.dur_s||0) > (maxR.dur_s||0)) maxR = r;
+  }
+
+  $("#kpiEventos").textContent = n.toLocaleString("pt-BR");
+  $("#kpiEventosNote").textContent = `Base: ${BASE.length.toLocaleString("pt-BR")} eventos`;
+
+  $("#kpiDowntime").textContent = humanHours(downtime);
+  $("#kpiDowntimeNote").textContent = `Total: ${fmtHMS(downtime)}`;
+
+  $("#kpiMedia").textContent = fmtHMS(avg);
+  $("#kpiMediaNote").textContent = `Média: ${(avg/60).toFixed(1)} min`;
+
+  $("#kpiMax").textContent = maxR ? fmtHMS(maxR.dur_s) : "—";
+  $("#kpiMaxNote").textContent = maxR
+    ? `${maxR.equipamento} • ${maxR.egp} • ${formatBR(maxR.inicio)}`
+    : "—";
+}
+
+function groupSum(rows, keyFn){
+  const m = new Map();
+  for (const r of rows){
+    const k = keyFn(r);
+    const v = (m.get(k)||0) + (r.dur_s||0);
+    m.set(k, v);
+  }
+  return m;
+}
+function topN(map, n=10){
+  return Array.from(map.entries())
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,n);
+}
+
+function plotMonthly(){
+  const MESES_PT=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const m2025=Array(12).fill(0), m2026=Array(12).fill(0);
+  for(const r of FILTERED){
+    if(!r?.inicio) continue; const y=r.inicio.getFullYear(); const m=r.inicio.getMonth();
+    const add=(r.dur_s||0)/3600.0; if(y===2025) m2025[m]+=add; else if(y===2026) m2026[m]+=add;
+  }
+  Plotly.newPlot('chMonthly', [
+    {type:'bar', name:'2025', x:MESES_PT, y:m2025, marker:{color:'rgba(77,163,255,.85)'}, hovertemplate:'%{x} 2025<br>Horas: %{y:.2f} h<extra></extra>'},
+    {type:'bar', name:'2026', x:MESES_PT, y:m2026, marker:{color:'rgba(251,191,36,.85)'}, hovertemplate:'%{x} 2026<br>Horas: %{y:.2f} h<extra></extra>'}
+  ], {barmode:'group', margin:{l:50,r:10,t:10,b:40}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', font:{color:'#e8edf7'}, xaxis:{gridcolor:'rgba(255,255,255,.06)'}, yaxis:{title:'Horas', gridcolor:'rgba(255,255,255,.06)'}}, {displayModeBar:false, responsive:true});
+}
+
+function plotTopEgp(){
+  const m = groupSum(FILTERED, r => r.egp || "(vazio)");
+  const t = topN(m, 10).reverse();
+  Plotly.newPlot("chEgp", [{
+    type:"bar",
+    orientation:"h",
+    y: t.map(e=>e[0]),
+    x: t.map(e=>(e[1]/3600)),
+    marker:{color:"rgba(251,191,36,.85)"},
+    hovertemplate:"%{y}<br>Downtime: %{x:.2f} h<extra></extra>"
+  }], {
+    margin:{l:140,r:10,t:10,b:40},
+    paper_bgcolor:"rgba(0,0,0,0)",
+    plot_bgcolor:"rgba(0,0,0,0)",
+    font:{color:"#e8edf7"},
+    xaxis:{title:"Horas", gridcolor:"rgba(255,255,255,.06)"},
+    yaxis:{gridcolor:"rgba(255,255,255,.06)"}
+  }, {displayModeBar:false, responsive:true});
+}
+
+function hourAgg(rows){
+  // retorna array de 24 horas com {h,count,downtime_s}
+  const agg = Array.from({length:24}, (_,h)=>({h, count:0, downtime_s:0}));
+  for(const r of rows){
+    const h = r.hora ?? (r.inicio ? r.inicio.getHours() : null);
+    if(h==null || h<0 || h>23) continue;
+    agg[h].count += 1;
+    agg[h].downtime_s += (r.dur_s||0);
+  }
+  return agg;
+}
+
+function plotHourEvents(){
+  const agg = hourAgg(FILTERED);
+  const x = agg.map(a=>pad2(a.h));
+  const y = agg.map(a=>a.count);
+  Plotly.newPlot('chHourEvents', [{
+    type:'bar',
+    x, y,
+    marker:{color:'rgba(147,197,253,.85)'},
+    hovertemplate:'%{x}h<br>Eventos: %{y}<extra></extra>'
+  }], {
+    margin:{l:50,r:10,t:10,b:40},
+    paper_bgcolor:'rgba(0,0,0,0)',
+    plot_bgcolor:'rgba(0,0,0,0)',
+    font:{color:'#e8edf7'},
+    xaxis:{title:'Hora', gridcolor:'rgba(255,255,255,.06)'},
+    yaxis:{title:'Eventos', gridcolor:'rgba(255,255,255,.06)'}
+  }, {displayModeBar:false, responsive:true});
+}
+
+function renderHourTable(){
+  const agg = hourAgg(FILTERED).slice().sort((a,b)=> b.count - a.count);
+  const rows = agg.map(a => ([
+    pad2(a.h),
+    a.count,
+    (a.downtime_s/3600).toFixed(2),
+    `<button class="secondary tinybtn" data-hour="${a.h}">ver eventos</button>`
+  ]));
+
+  if(!DT_HOUR){
+    DT_HOUR = window.jQuery ? window.jQuery('#tblHour').DataTable({
+      data: rows,
+      columns: [
+        {title:'Hora'},
+        {title:'Eventos'},
+        {title:'Downtime (h)'},
+        {title:'Ação', orderable:false, searchable:false}
+      ],
+      pageLength: 10,
+      order: [[1,'desc']],
+      language: {
+        search: 'Buscar:',
+        lengthMenu: 'Mostrar _MENU_',
+        info: 'Mostrando _START_ a _END_ de _TOTAL_',
+        paginate: { previous: 'Anterior', next: 'Próximo' },
+        zeroRecords: 'Nada encontrado'
+      }
+    }) : null;
+  }else{
+    DT_HOUR.clear();
+    DT_HOUR.rows.add(rows);
+    DT_HOUR.draw();
+  }
+}
+
+
+function setHourRangeAndApply(h){
+  document.querySelector('#fHourStart').value = String(h);
+  document.querySelector('#fHourEnd').value = String(h);
+  applyFilters();
+}
+
+function plotTopEquip(){
+  const m = groupSum(FILTERED, r => r.equipamento || "(vazio)");
+  const t = topN(m, 10).reverse();
+  Plotly.newPlot("chEquip", [{
+    type:"bar",
+    orientation:"h",
+    y: t.map(e=>e[0]),
+    x: t.map(e=>(e[1]/3600)),
+    marker:{color:"rgba(52,211,153,.85)"},
+    hovertemplate:"%{y}<br>Downtime: %{x:.2f} h<extra></extra>"
+  }], {
+    margin:{l:140,r:10,t:10,b:40},
+    paper_bgcolor:"rgba(0,0,0,0)",
+    plot_bgcolor:"rgba(0,0,0,0)",
+    font:{color:"#e8edf7"},
+    xaxis:{title:"Horas", gridcolor:"rgba(255,255,255,.06)"},
+    yaxis:{gridcolor:"rgba(255,255,255,.06)"}
+  }, {displayModeBar:false, responsive:true});
+}
+
+function plotTurma(){
+  const m = groupSum(FILTERED, r => r.turma || "(vazio)");
+  const entries = Array.from(m.entries()).sort((a,b)=>b[1]-a[1]);
+  Plotly.newPlot("chTurma", [{
+    type:"bar",
+    x: entries.map(e=>e[0]),
+    y: entries.map(e=>(e[1]/3600)),
+    marker:{color:"rgba(251,113,133,.85)"},
+    hovertemplate:"Turma %{x}<br>Downtime: %{y:.2f} h<extra></extra>"
+  }], {
+    margin:{l:50,r:10,t:10,b:40},
+    paper_bgcolor:"rgba(0,0,0,0)",
+    plot_bgcolor:"rgba(0,0,0,0)",
+    font:{color:"#e8edf7"},
+    xaxis:{gridcolor:"rgba(255,255,255,.06)"},
+    yaxis:{title:"Horas", gridcolor:"rgba(255,255,255,.06)"}
+  }, {displayModeBar:false, responsive:true});
+}
+
+function renderTable(){
+  const rows = FILTERED.map(r => ([
+    r.equipamento,
+    r.egp,
+    r.classe,
+    r.setor,
+    r.causa,
+    r.falha,
+    r.turma,
+    formatBR(r.inicio),
+    formatBR(r.fim),
+    r.dur_text,
+    ((r.dur_s||0)/60).toFixed(1)
+  ]));
+
+  if (!DT){
+    DT = $("#tbl") && window.jQuery ? window.jQuery("#tbl").DataTable({
+      data: rows,
+      columns: [
+        {title:"Equipamento"},
+        {title:"EGP"},
+        {title:"Classe"},
+        {title:"Setor"},
+        {title:"Causa"},
+        {title:"Falha"},
+        {title:"Turma"},
+        {title:"Data Início"},
+        {title:"Data Fim"},
+        {title:"Duração"},
+        {title:"Duração (min)"}
+      ],
+      pageLength: 25,
+      order: [[7,"desc"]],
+      language: {
+        search: "Buscar:",
+        lengthMenu: "Mostrar _MENU_",
+        info: "Mostrando _START_ a _END_ de _TOTAL_",
+        paginate: { previous: "Anterior", next: "Próximo" },
+        zeroRecords: "Nada encontrado"
+      }
+    }) : null;
+  } else {
+    DT.clear();
+    DT.rows.add(rows);
+    DT.draw();
+  }
+
+  setPill("pillTable", `${FILTERED.length.toLocaleString("pt-BR")} linhas`);
+}
+
+function renderAll(){
+  renderKPIs();
+  plotMonthly();
+  plotTopEgp();
+  plotHourEvents();
+  renderHourTable();
+  plotTurma();
+  renderTable();
+
+  plotMonthlyCompare();
+  renderMonthlyCompareTable();
+}
+
+function exportFilteredCSV(){
+  const header = ["Equipamento","Data Início","Data Fim","Duração","EGP","Classe","Setor","Causa","Falha","Turma"];
+  const lines = [header.join(";")];
+
+  for (const r of FILTERED){
+    const row = [
+      r.equipamento,
+      formatBR(r.inicio),
+      formatBR(r.fim),
+      r.dur_text,
+      r.egp,
+      r.classe,
+      r.setor,
+      r.causa,
+      r.falha,
+      r.turma
+    ].map(v => (v ?? "").toString().replaceAll(";", ","));
+    lines.push(row.join(";"));
+  }
+
+  const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `SI-PATIO_filtrado_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(a.href);
+}
+
+function getImportMode(){
+  return document.querySelector('input[name="importMode"]:checked')?.value || "replace";
+}
+
+function loadDataset(rows, sourceName, keepDefault=false){
+  BASE = rows.slice();
+  FILTERED = rows.slice();
+
+  if (!DEFAULT_SNAPSHOT || !keepDefault) {
+    DEFAULT_SNAPSHOT = rows.slice();
+  }
+
+  updateHeaderMeta(sourceName);
+  refreshFilterOptions(BASE);
+
+  const meta = computeMeta(BASE);
+  $("#fStart").value = meta.min ? toDTLocalValue(meta.min) : "";
+  $("#fEnd").value   = meta.max ? toDTLocalValue(meta.max) : "";
+
+  setPill("pillFiltered", `filtrado: ${FILTERED.length}/${BASE.length}`);
+  renderAll();
+}
+
+function mergeAppend(newRows){
+  const map = new Map(BASE.map(r => [r._id, r]));
+  let added = 0;
+
+  for (const r of newRows){
+    if (!map.has(r._id)){
+      map.set(r._id, r);
+      added++;
+    }
+  }
+  BASE = Array.from(map.values()).sort((a,b)=>a.inicio - b.inicio);
+  FILTERED = BASE.slice();
+
+  setStatus(`append: +${added} (dedup)`, added ? "ok" : "warn");
+  updateHeaderMeta($("#pillSource").textContent);
+  refreshFilterOptions(BASE);
+
+  setPill("pillFiltered", `filtrado: ${FILTERED.length}/${BASE.length}`);
+  renderAll();
+}
+
+function getFileExt(name){
+  const m = (name || "").toLowerCase().match(/\.([a-z0-9]+)$/);
+  return m ? m[1] : "";
+}
+
+function finishImport(rows, file, extLabel){
+  if (!rows.length){
+    setStatus(`${extLabel} sem linhas válidas`, "bad");
+    alert(
+      "Não consegui ler linhas válidas do arquivo.\n\n" +
+      "Verifique se existem colunas com os nomes (em qualquer ordem, maiúsc./minúsc. e acentos não importam):\n" +
+      "Equipamento, EGP, Classe, Setor, Causa, Falha, Turma, Data Início, Data Fim, Duração.\n\n" +
+      "Datas podem estar como texto 'dd/mm/aaaa hh:mm:ss' ou como data/hora nativa da planilha."
+    );
+    return;
+  }
+  const mode = getImportMode();
+  if (mode === "replace") {
+    loadDataset(rows, `${file.name} (importado)`, false);
+    setStatus("importado (replace)", "ok");
+  } else {
+    mergeAppend(rows);
+  }
+}
+
+// Procura, em cada planilha do arquivo, a linha que contém os cabeçalhos reais
+// (ex.: "Equipamento", "Início", "Fim") — relatórios exportados do SI-PÁTIO
+// trazem várias linhas de metadados (título, filtros aplicados etc.) antes
+// da tabela de dados, então não dá pra assumir que a linha 1 é o cabeçalho.
+const HEADER_HINTS = ["equipamento", "inicio", "início", "fim", "duracao", "duração"];
+
+function findHeaderRowAndSheet(workbook){
+  let best = null; // {sheetName, headerRowIndex, score}
+  for (const sheetName of workbook.SheetNames){
+    const sheet = workbook.Sheets[sheetName];
+    if (!sheet["!ref"]) continue;
+    const range = XLSX.utils.decode_range(sheet["!ref"]);
+    const maxScanRows = Math.min(range.e.r, 40); // procura só nas primeiras ~40 linhas
+    for (let r = range.s.r; r <= maxScanRows; r++){
+      let score = 0;
+      for (let c = range.s.c; c <= range.e.c; c++){
+        const cell = sheet[XLSX.utils.encode_cell({ r, c })];
+        if (!cell || cell.v == null) continue;
+        const v = normKey(cell.v.toString());
+        if (HEADER_HINTS.includes(v)) score++;
+      }
+      if (score >= 2 && (!best || score > best.score)){
+        best = { sheetName, headerRowIndex: r, score };
+      }
+    }
+  }
+  return best;
+}
+
+// ---- leitura de um único arquivo -> Promise<rows[]> (sem tocar no dataset ainda) ----
+
+function readCSVAsRows(file){
+  return new Promise((resolve, reject) => {
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      delimiter: ";",
+      complete: (res) => {
+        let rows = normalizeRows(res.data || []);
+        if (!rows.length) {
+          // fallback: delimitador diferente (,  \t  etc.) — deixa o PapaParse detectar sozinho
+          Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: (res2) => resolve(normalizeRows(res2.data || [])),
+            error: (err) => reject(err)
+          });
+          return;
+        }
+        resolve(rows);
+      },
+      error: (err) => reject(err)
+    });
+  });
+}
+
+function readExcelAsRows(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try{
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array", cellDates: true });
+
+        // tenta localizar automaticamente a aba e a linha de cabeçalho reais
+        // (necessário para relatórios do SI-PÁTIO, que têm metadados antes da tabela)
+        const found = findHeaderRowAndSheet(workbook);
+
+        let sheetName, headerRow;
+        if (found){
+          sheetName = found.sheetName;
+          headerRow = found.headerRowIndex;
+        } else {
+          // fallback: comportamento antigo (primeira planilha com mais de 1 linha)
+          sheetName = workbook.SheetNames.find(n => {
+            const sh = workbook.Sheets[n];
+            const range = sh["!ref"] ? XLSX.utils.decode_range(sh["!ref"]) : null;
+            return range && range.e.r > range.s.r;
+          }) || workbook.SheetNames[0];
+          headerRow = 0;
+        }
+
+        const sheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: true, range: headerRow });
+        resolve(normalizeRows(json));
+      } catch(err){
+        reject(err);
+      }
+    };
+    reader.onerror = (err) => reject(err);
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function readFileAsRows(file){
+  const ext = getFileExt(file.name);
+  if (ext === "xlsx" || ext === "xls" || ext === "xlsm") return readExcelAsRows(file);
+  return readCSVAsRows(file);
+}
+
+// ---- importa 1 ou vários arquivos de uma vez ----
+
+async function importFiles(fileList){
+  const files = Array.from(fileList || []);
+  if (!files.length) return;
+
+  setStatus(files.length > 1 ? `importando ${files.length} arquivos…` : "importando…", "info");
+
+  const rowsById = new Map(); // dedup entre os próprios arquivos selecionados na mesma leva
+  const okFiles = [];
+  const emptyFiles = [];
+  const failedFiles = [];
+
+  for (const file of files){
+    try{
+      const rows = await readFileAsRows(file);
+      if (!rows.length){
+        emptyFiles.push(file.name);
+        continue;
+      }
+      for (const r of rows) rowsById.set(r._id, r);
+      okFiles.push(file.name);
+    } catch(err){
+      failedFiles.push(`${file.name}: ${err}`);
+    }
+  }
+
+  const combinedRows = Array.from(rowsById.values()).sort((a,b) => a.inicio - b.inicio);
+
+  if (!combinedRows.length){
+    setStatus("nenhuma linha reconhecida", "bad");
+    alert(
+      "Não consegui ler linhas válidas de nenhum arquivo selecionado.\n\n" +
+      "Verifique se existem colunas com os nomes (em qualquer ordem, maiúsc./minúsc. e acentos não importam):\n" +
+      "Equipamento, EGP, Classe, Setor, Causa, Falha, Turma, Data Início, Data Fim, Duração.\n\n" +
+      "Datas podem estar como texto 'dd/mm/aaaa hh:mm:ss' ou como data/hora nativa da planilha."
+    );
+    return;
+  }
+
+  const mode = getImportMode();
+  const label = okFiles.length <= 1
+    ? `${okFiles[0] || files[0].name} (importado)`
+    : `${okFiles.length} arquivos (${okFiles.join(", ")})`;
+
+  if (mode === "replace") {
+    loadDataset(combinedRows, label, false);
+    setStatus(`importado: ${combinedRows.length} linhas de ${okFiles.length} arquivo(s)`, "ok");
+  } else {
+    mergeAppend(combinedRows);
+  }
+
+  if (emptyFiles.length){
+    alert("Sem linhas reconhecidas nestes arquivos (ignorados):\n" + emptyFiles.join("\n"));
+  }
+  if (failedFiles.length){
+    alert("Erro ao ler estes arquivos:\n" + failedFiles.join("\n"));
+  }
+}
+
+function saveToStore(){
+  const payload = {
+    savedAt: new Date().toISOString(),
+    source: $("#pillSource").textContent || "",
+    rows: BASE.map(r => ({
+      equipamento:r.equipamento, egp:r.egp, classe:r.classe, setor:r.setor,
+      causa:r.causa, falha:r.falha, turma:r.turma,
+      inicio:r.inicio.toISOString(), fim:r.fim.toISOString(),
+      dur_s:r.dur_s
+    }))
+  };
+  localStorage.setItem(STORE_KEY, JSON.stringify(payload));
+  setStatus("salvo no navegador", "ok");
+}
+
+function loadFromStore(){
+  const raw = localStorage.getItem(STORE_KEY);
+  if (!raw){
+    setStatus("cache vazio", "warn");
+    alert("Não há dados salvos no navegador.");
+    return;
+  }
+  try{
+    const payload = JSON.parse(raw);
+    const rows = payload.rows.map(x => {
+      const inicio = new Date(x.inicio);
+      const fim = new Date(x.fim);
+      const r = {
+        equipamento:x.equipamento, egp:x.egp, classe:x.classe, setor:x.setor,
+        causa:x.causa, falha:x.falha, turma:x.turma,
+        inicio, fim,
+        dur_s:x.dur_s,
+        dur_text: fmtHMS(x.dur_s),
+        mes: monthKey(inicio),
+        dow: inicio.getDay(),
+        hora: inicio.getHours(),
+        _id:""
+      };
+      r._id = makeId(r);
+      return r;
+    });
+    loadDataset(rows, (payload.source || "cache") + " (localStorage)", true);
+    setStatus("carregado do cache", "ok");
+  } catch(e){
+    setStatus("erro ao ler cache", "bad");
+    alert("Erro ao ler cache: " + e);
+  }
+}
+
+function clearStore(){
+  localStorage.removeItem(STORE_KEY);
+  setStatus("cache limpo", "warn");
+}
+
+async function tryAutoLoadSameFolder(){
+  try{
+    const res = await fetch("SI-PATIO.csv", {cache:"no-store"});
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const text = await res.text();
+
+    Papa.parse(text, {
+      header:true,
+      skipEmptyLines:true,
+      delimiter:";",
+      complete:(r)=>{
+        const rows = normalizeRows(r.data || []);
+        if (rows.length){
+          loadDataset(rows, "SI-PATIO.csv (auto)", false);
+          setStatus("auto-load OK", "ok");
+        } else {
+          setStatus("auto-load vazio", "warn");
+        }
+      }
+    });
+
+  } catch(e){
+    setStatus("auto-load bloqueado (use Importar)", "warn");
+  }
+}
+
+
+// ====== Comparativo 2025 vs 2026 (mês a mês) ======
+const MESES_PT = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+function monthlyCompareData(rows, metric){
+  const yWant = [2025, 2026];
+  const m2025 = Array(12).fill(0);
+  const m2026 = Array(12).fill(0);
+  const isDow = metric === 'dow';
+  for(const r of rows){
+    if(!r?.inicio) continue;
+    const y = r.inicio.getFullYear();
+    if(y!==2025 && y!==2026) continue;
+    const m = r.inicio.getMonth(); // 0..11
+    if(isDow){
+      const add = (r.dur_s||0)/3600.0;
+      if(y===2025) m2025[m]+=add; else m2026[m]+=add;
+    } else {
+      if(y===2025) m2025[m]+=1; else m2026[m]+=1;
+    }
+  }
+  return {labels:MESES_PT, v25:m2025, v26:m2026};
+}
+function fmtNum(val, metric){
+  if(metric==='dow') return (Math.round(val*100)/100).toFixed(2);
+  return String(Math.round(val));
+}
+function fmtPct(num){
+  if(num==null || !isFinite(num)) return '—';
+  const v = Math.round(num*10)/10;
+  return v.toFixed(1)+'%';
+}
+function plotMonthlyCompare(){
+  const d = monthlyCompareData(FILTERED, COMPARE_METRIC);
+  Plotly.newPlot('chMonthlyCompare', [
+    {type:'bar', name:'2025', x:d.labels, y:d.v25, marker:{color:'rgba(77,163,255,.85)'}},
+    {type:'bar', name:'2026', x:d.labels, y:d.v26, marker:{color:'rgba(251,191,36,.85)'}}
+  ], {
+    barmode:'group',
+    margin:{l:50,r:10,t:10,b:40},
+    paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', font:{color:'#e8edf7'},
+    xaxis:{gridcolor:'rgba(255,255,255,.06)'},
+    yaxis:{title: COMPARE_METRIC==='dow' ? 'Horas' : 'Eventos', gridcolor:'rgba(255,255,255,.06)'}
+  }, {displayModeBar:false, responsive:true});
+}
+function renderMonthlyCompareTable(){
+  const d = monthlyCompareData(FILTERED, COMPARE_METRIC);
+  const rows = [];
+  for(let i=0;i<12;i++){
+    const v25 = d.v25[i]||0, v26 = d.v26[i]||0;
+    const delta = v26 - v25;
+    const pct = (v25!==0) ? (delta / v25) * 100 : NaN;
+    rows.push([
+      d.labels[i],
+      fmtNum(v25, COMPARE_METRIC),
+      fmtNum(v26, COMPARE_METRIC),
+      fmtNum(delta, COMPARE_METRIC),
+      fmtPct(pct)
+    ]);
+  }
+  if(!DT_MC){
+    DT_MC = window.jQuery ? window.jQuery('#tblMonthlyCompare').DataTable({
+      data: rows,
+      columns:[{title:'Mês'},{title:'2025'},{title:'2026'},{title:'Δ 26–25'},{title:'%Δ'}],
+      pageLength: 12,
+      searching:false,
+      lengthChange:false,
+      info:false,
+      order:[[0,'asc']],
+      language:{
+        paginate:{previous:'Anterior', next:'Próximo'}, zeroRecords:'Nada encontrado'
+      }
+    }) : null;
+  } else {
+    DT_MC.clear();
+    DT_MC.rows.add(rows);
+    DT_MC.draw();
+  }
+}
+
+/* ====== Eventos ====== */
+$("#btnApply").addEventListener("click", applyFilters);
+$("#btnClear").addEventListener("click", clearFilters);
+$("#btnReset").addEventListener("click", resetToDefault);
+$("#btnExport").addEventListener("click", exportFilteredCSV);
+
+$("#btnSave").addEventListener("click", saveToStore);
+$("#btnLoad").addEventListener("click", loadFromStore);
+$("#btnClearStore").addEventListener("click", clearStore);
+
+// clique em 'ver eventos' na tabela por hora
+document.addEventListener('click', (ev)=>{
+  // Toggle métrica comparativa
+  if(ev.target && ev.target.id==='btnMetricDow'){
+    COMPARE_METRIC='dow';
+    const pill=document.querySelector('#pillCompareHint'); if(pill) pill.textContent='métrica: downtime (h)';
+    plotMonthlyCompare(); renderMonthlyCompareTable();
+  } else if(ev.target && ev.target.id==='btnMetricEvt'){
+    COMPARE_METRIC='evt';
+    const pill=document.querySelector('#pillCompareHint'); if(pill) pill.textContent='métrica: eventos (qtd)';
+    plotMonthlyCompare(); renderMonthlyCompareTable();
+  }
+
+  const btn = ev.target.closest && ev.target.closest('button[data-hour]');
+  if(!btn) return;
+  const h = parseInt(btn.getAttribute('data-hour'),10);
+  if(isFinite(h)) setHourRangeAndApply(h);
+});
+
+$("#fileInput").addEventListener("change", (e)=>{
+  const files = e.target.files;
+  if (files && files.length) importFiles(files);
+  e.target.value = ""; // permite selecionar os mesmos arquivos de novo depois, se precisar
+});
+
+/* ====== Init ====== */
+setStatus("iniciando…", "info");
+fillHourSelect("fHourStart", false);
+fillHourSelect("fHourEnd", true);
+tryAutoLoadSameFolder();
+</script>
+</body>
+</html>
