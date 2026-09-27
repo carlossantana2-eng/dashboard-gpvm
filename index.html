@@ -3,28 +3,29 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Dashboard • SI-PÁTIO (v14)</title>
+  <title>Análise de Apontamentos GPV Mineração</title>
 
   <style>
     :root {
-      --bg: #0b1220;
-      --text: #e8edf7;
-      --muted: #9fb0d0;
+      --vale-green:#007E7A;--vale-yellow:#ECB11F;--vale-dark:#555555;--vale-white:#FFFFFF;--vale-aqua:#0ABB98;--vale-blue:#3CB5E5;--vale-cherry:#C0305E;--vale-orange:#EE6F16;
+      --bg: #FFFFFF;
+      --text: #555555;
+      --muted: #007E7A;
       --border: rgba(255,255,255,.10);
       --shadow: 0 10px 30px rgba(0,0,0,.35);
       --radius: 14px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
       --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      --ok: rgba(52, 211, 153, .18);
-      --warn: rgba(251, 191, 36, .16);
-      --bad: rgba(251, 113, 133, .16);
-      --info: rgba(77,163,255,.15);
+      --ok: rgba(10,187,152,.18);
+      --warn: rgba(237,177,31,.18);
+      --bad: rgba(192,48,94,.18);
+      --info: rgba(60,181,229,.18);
     }
     html,body{height:100%}
     body{
       margin:0;
       font-family:var(--sans);
-      background: radial-gradient(1200px 600px at 10% 0%, #142244, transparent), var(--bg);
+      background: radial-gradient(1200px 600px at 10% 0%, rgba(60,181,229,.15), transparent), radial-gradient(1200px 600px at 90% 0%, rgba(10,187,152,.12), transparent), var(--bg);
       color:var(--text);
     }
     header{
@@ -32,7 +33,7 @@
       position:sticky;
       top:0;
       backdrop-filter: blur(10px);
-      background: linear-gradient(to bottom, rgba(11,18,32,.92), rgba(11,18,32,.60));
+      background: linear-gradient(to right, #007E7A, #0ABB98);
       border-bottom:1px solid var(--border);
       z-index:100;
     }
@@ -44,7 +45,7 @@
     .grid.main{grid-template-columns: 420px 1fr; align-items:start}
     .grid.charts{grid-template-columns: repeat(2, minmax(320px, 1fr))}
     .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      background:#FFFFFF;
       border:1px solid var(--border);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
@@ -92,23 +93,23 @@
     .btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
     button{
       border:1px solid var(--border);
-      background: rgba(77,163,255,.15);
+      background: rgba(60,181,229,.18);
       color:var(--text);
       padding:9px 12px;
       border-radius:11px;
       cursor:pointer;
       font-weight:650;
     }
-    button.secondary{background: rgba(255,255,255,.06)}
-    button.danger{background: rgba(251,113,133,.15)}
-    button.ok{background: rgba(52,211,153,.15)}
+    button.secondary{background:#3CB5E5;color:#FFFFFF}
+    button.danger{background:#C0305E;color:#FFFFFF}
+    button.ok{background:#0ABB98;color:#FFFFFF}
 .tinybtn{padding:6px 10px; border-radius:10px; font-size:11px;}
     .tiny{font-size:11px; color:var(--muted)}
     #tableWrap{overflow:hidden}
     table.dataTable{width:100% !important; border-collapse:collapse !important}
     table.dataTable thead th{
-      background: rgba(255,255,255,.06);
-      color: var(--text);
+      background:#007E7A;
+      color:#FFFFFF;
       border-bottom: 1px solid var(--border) !important;
     }
     table.dataTable tbody td{
@@ -128,7 +129,7 @@
       border:1px solid transparent;
     }
     .dataTables_wrapper .dataTables_paginate .paginate_button.current{
-      background: rgba(77,163,255,.20) !important;
+      background:#3CB5E5 !important;
       border: 1px solid var(--border) !important;
     }
     .dataTables_wrapper .dataTables_info,
@@ -155,11 +156,36 @@
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css"/>
   <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+
+<style id="vale-ui-enhancements">
+body{font-family:Segoe UI,Tahoma,Arial,sans-serif!important;line-height:1.6!important;color:#333!important;}
+.container,.content,main{padding:24px!important;}
+.card{padding:20px!important;margin-bottom:20px!important;border-radius:14px!important;box-shadow:0 4px 12px rgba(0,0,0,.08)!important;}
+h1,h2,h3,h4{color:#007E7A!important;line-height:1.3!important;font-weight:700!important;}
+p,li,td,th,label,span,div{letter-spacing:.2px;}
+table td,table th{padding:12px 14px!important;}
+input,select,textarea{padding:10px 12px!important;font-size:14px!important;}
+button{padding:10px 18px!important;font-weight:600!important;border-radius:8px!important;}
+.metric,.kpi{padding:16px!important;}
+.dataTables_wrapper{padding-top:10px!important;}
+</style>
+
+<style id="vale-final-fixes">
+header h1{color:#FFFFFF!important;text-shadow:0 2px 4px rgba(0,0,0,.35)!important;font-weight:800!important;}
+header .sub,header .sub *,header .pill{color:#FFFFFF!important;}
+header .pill{background:rgba(255,255,255,.15)!important;border:1px solid rgba(255,255,255,.30)!important;}
+.controls{overflow:hidden!important;}
+.controls .row>div{min-width:0!important;}
+.controls input,.controls select{background:#FFFFFF!important;color:#555555!important;border:1px solid #C9D1D3!important;}
+#fStart,#fEnd,#fCausa{height:42px!important;}
+#fFalha{height:120px!important;max-height:120px!important;min-height:120px!important;overflow-y:auto!important;}
+@media(max-width:768px){.controls .row{grid-template-columns:1fr!important;}#fFalha{height:100px!important;min-height:100px!important;}.btns button{width:100%!important;}}
+</style>
 </head>
 
 <body>
 <header>
-  <h1>Dashboard • SI-PÁTIO (v14) • Paradas / Falhas</h1>
+  <h1>Dashboard • Análise de Apontamentos GPV Mineração • Paradas / Falhas</h1>
   <div class="sub">
     Fonte: <span class="pill info" id="pillSource">—</span>
     • Período: <span class="pill" id="pillPeriod">—</span>
@@ -265,7 +291,7 @@
           </div>
           <div>
             <label>Falha</label>
-            <select id="fFalha" multiple size="6"></select>
+            <select id="fFalha" multiple></select>
           </div>
         </div>
 
@@ -867,9 +893,9 @@ function plotMonthly(){
     const add=(r.dur_s||0)/3600.0; if(y===2025) m2025[m]+=add; else if(y===2026) m2026[m]+=add;
   }
   Plotly.newPlot('chMonthly', [
-    {type:'bar', name:'2025', x:MESES_PT, y:m2025, marker:{color:'rgba(77,163,255,.85)'}, hovertemplate:'%{x} 2025<br>Horas: %{y:.2f} h<extra></extra>'},
-    {type:'bar', name:'2026', x:MESES_PT, y:m2026, marker:{color:'rgba(251,191,36,.85)'}, hovertemplate:'%{x} 2026<br>Horas: %{y:.2f} h<extra></extra>'}
-  ], {barmode:'group', margin:{l:50,r:10,t:10,b:40}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', font:{color:'#e8edf7'}, xaxis:{gridcolor:'rgba(255,255,255,.06)'}, yaxis:{title:'Horas', gridcolor:'rgba(255,255,255,.06)'}}, {displayModeBar:false, responsive:true});
+    {type:'bar', name:'2025', x:MESES_PT, y:m2025, marker:{color:'#3CB5E5'}, hovertemplate:'%{x} 2025<br>Horas: %{y:.2f} h<extra></extra>'},
+    {type:'bar', name:'2026', x:MESES_PT, y:m2026, marker:{color:'#ECB11F'}, hovertemplate:'%{x} 2026<br>Horas: %{y:.2f} h<extra></extra>'}
+  ], {barmode:'group', margin:{l:50,r:10,t:10,b:40}, paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', font:{color:'#555555'}, xaxis:{gridcolor:'rgba(255,255,255,.06)'}, yaxis:{title:'Horas', gridcolor:'rgba(255,255,255,.06)'}}, {displayModeBar:false, responsive:true});
 }
 
 function plotTopEgp(){
@@ -880,13 +906,13 @@ function plotTopEgp(){
     orientation:"h",
     y: t.map(e=>e[0]),
     x: t.map(e=>(e[1]/3600)),
-    marker:{color:"rgba(251,191,36,.85)"},
+    marker:{color:"#ECB11F"},
     hovertemplate:"%{y}<br>Downtime: %{x:.2f} h<extra></extra>"
   }], {
     margin:{l:140,r:10,t:10,b:40},
     paper_bgcolor:"rgba(0,0,0,0)",
     plot_bgcolor:"rgba(0,0,0,0)",
-    font:{color:"#e8edf7"},
+    font:{color:"#555555"},
     xaxis:{title:"Horas", gridcolor:"rgba(255,255,255,.06)"},
     yaxis:{gridcolor:"rgba(255,255,255,.06)"}
   }, {displayModeBar:false, responsive:true});
@@ -911,13 +937,13 @@ function plotHourEvents(){
   Plotly.newPlot('chHourEvents', [{
     type:'bar',
     x, y,
-    marker:{color:'rgba(147,197,253,.85)'},
+    marker:{color:'#007E7A'},
     hovertemplate:'%{x}h<br>Eventos: %{y}<extra></extra>'
   }], {
     margin:{l:50,r:10,t:10,b:40},
     paper_bgcolor:'rgba(0,0,0,0)',
     plot_bgcolor:'rgba(0,0,0,0)',
-    font:{color:'#e8edf7'},
+    font:{color:'#555555'},
     xaxis:{title:'Hora', gridcolor:'rgba(255,255,255,.06)'},
     yaxis:{title:'Eventos', gridcolor:'rgba(255,255,255,.06)'}
   }, {displayModeBar:false, responsive:true});
@@ -973,13 +999,13 @@ function plotTopEquip(){
     orientation:"h",
     y: t.map(e=>e[0]),
     x: t.map(e=>(e[1]/3600)),
-    marker:{color:"rgba(52,211,153,.85)"},
+    marker:{color:"#0ABB98"},
     hovertemplate:"%{y}<br>Downtime: %{x:.2f} h<extra></extra>"
   }], {
     margin:{l:140,r:10,t:10,b:40},
     paper_bgcolor:"rgba(0,0,0,0)",
     plot_bgcolor:"rgba(0,0,0,0)",
-    font:{color:"#e8edf7"},
+    font:{color:"#555555"},
     xaxis:{title:"Horas", gridcolor:"rgba(255,255,255,.06)"},
     yaxis:{gridcolor:"rgba(255,255,255,.06)"}
   }, {displayModeBar:false, responsive:true});
@@ -992,13 +1018,13 @@ function plotTurma(){
     type:"bar",
     x: entries.map(e=>e[0]),
     y: entries.map(e=>(e[1]/3600)),
-    marker:{color:"rgba(251,113,133,.85)"},
+    marker:{color:"#C0305E"},
     hovertemplate:"Turma %{x}<br>Downtime: %{y:.2f} h<extra></extra>"
   }], {
     margin:{l:50,r:10,t:10,b:40},
     paper_bgcolor:"rgba(0,0,0,0)",
     plot_bgcolor:"rgba(0,0,0,0)",
-    font:{color:"#e8edf7"},
+    font:{color:"#555555"},
     xaxis:{gridcolor:"rgba(255,255,255,.06)"},
     yaxis:{title:"Horas", gridcolor:"rgba(255,255,255,.06)"}
   }, {displayModeBar:false, responsive:true});
@@ -1440,12 +1466,12 @@ function fmtPct(num){
 function plotMonthlyCompare(){
   const d = monthlyCompareData(FILTERED, COMPARE_METRIC);
   Plotly.newPlot('chMonthlyCompare', [
-    {type:'bar', name:'2025', x:d.labels, y:d.v25, marker:{color:'rgba(77,163,255,.85)'}},
-    {type:'bar', name:'2026', x:d.labels, y:d.v26, marker:{color:'rgba(251,191,36,.85)'}}
+    {type:'bar', name:'2025', x:d.labels, y:d.v25, marker:{color:'#3CB5E5'}},
+    {type:'bar', name:'2026', x:d.labels, y:d.v26, marker:{color:'#ECB11F'}}
   ], {
     barmode:'group',
     margin:{l:50,r:10,t:10,b:40},
-    paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', font:{color:'#e8edf7'},
+    paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)', font:{color:'#555555'},
     xaxis:{gridcolor:'rgba(255,255,255,.06)'},
     yaxis:{title: COMPARE_METRIC==='dow' ? 'Horas' : 'Eventos', gridcolor:'rgba(255,255,255,.06)'}
   }, {displayModeBar:false, responsive:true});
